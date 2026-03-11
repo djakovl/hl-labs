@@ -19,6 +19,9 @@ dist/
 # Package files
 *.jar
 
+# Gradle wrapper jar должен быть в репозитории
+!gradle/wrapper/gradle-wrapper.jar
+
 # Maven
 target/
 dist/
