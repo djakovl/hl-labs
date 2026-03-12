@@ -10,8 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import digital.zil.hl.module1.Application;
-import digital.zil.hl.module1.model.User;
-import digital.zil.hl.module1.repository.UserRepository;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;

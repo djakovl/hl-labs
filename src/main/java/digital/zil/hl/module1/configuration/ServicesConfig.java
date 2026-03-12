@@ -1,12 +1,15 @@
 package digital.zil.hl.module1.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import digital.zil.hl.module1.model.Course;
+import digital.zil.hl.module1.model.Student;
+import digital.zil.hl.module1.repository.RCourse;
+import digital.zil.hl.module1.repository.REnrollment;
+import digital.zil.hl.module1.repository.RStudent;
+import digital.zil.hl.module1.service.SCourse;
+import digital.zil.hl.module1.service.SEnrollment;
+import digital.zil.hl.module1.service.SStudent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import digital.zil.hl.module1.model.User;
-import digital.zil.hl.module1.repository.UserRepository;
-import digital.zil.hl.module1.service.StatisticsService;
-import digital.zil.hl.module1.service.UserService;
 
 import java.util.UUID;
 
@@ -14,23 +17,23 @@ import java.util.UUID;
 public class ServicesConfig {
 
     @Bean
-    UserService userService(UserRepository userRepository) {
-        UserService userService = new UserService(userRepository);
-        for (int i = 0; i < 5; i++) {
-            userRepository.save(new User(UUID.randomUUID(), "new super user"));
-        }
-        return userService;
+    SStudent sStudent(RStudent rStudent) {
+        SStudent service = new SStudent(rStudent);
+        rStudent.save(new Student(UUID.randomUUID(), "Иванов Иван Иванович", "СТ-001", 2022));
+        rStudent.save(new Student(UUID.randomUUID(), "Петрова Анна Сергеевна", "СТ-002", 2023));
+        return service;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console2000")
-    StatisticsService statisticsService2000(UserService userService){
-        return new StatisticsService(2000, userService);
+    SCourse sCourse(RCourse rCourse) {
+        SCourse service = new SCourse(rCourse);
+        rCourse.save(new Course(UUID.randomUUID(), "CS101", "Основы программирования", "Смирнов А.В.", 4));
+        rCourse.save(new Course(UUID.randomUUID(), "MATH201", "Высшая математика", "Козлов Д.П.", 5));
+        return service;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console1000")
-    StatisticsService statisticsService1000(UserService userService){
-        return new StatisticsService(1000, userService);
+    SEnrollment sEnrollment(REnrollment rEnrollment) {
+        return new SEnrollment(rEnrollment);
     }
 }
