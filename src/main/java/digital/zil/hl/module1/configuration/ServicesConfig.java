@@ -2,13 +2,13 @@ package digital.zil.hl.module1.configuration;
 
 import digital.zil.hl.module1.model.Course;
 import digital.zil.hl.module1.model.Student;
-import digital.zil.hl.module1.repository.RCourse;
-import digital.zil.hl.module1.repository.REnrollment;
-import digital.zil.hl.module1.repository.RStudent;
-import digital.zil.hl.module1.service.SCourse;
-import digital.zil.hl.module1.service.SEnrollment;
-import digital.zil.hl.module1.service.SStudent;
-import digital.zil.hl.module1.service.SStatistics;
+import digital.zil.hl.module1.repository.CourseRepository;
+import digital.zil.hl.module1.repository.EnrollmentRepository;
+import digital.zil.hl.module1.repository.StudentRepository;
+import digital.zil.hl.module1.service.CourseService;
+import digital.zil.hl.module1.service.EnrollmentService;
+import digital.zil.hl.module1.service.StudentService;
+import digital.zil.hl.module1.service.StatisticsService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,36 +19,36 @@ import java.util.UUID;
 public class ServicesConfig {
 
     @Bean
-    SStudent sStudent(RStudent rStudent) {
-        SStudent service = new SStudent(rStudent);
-        rStudent.save(new Student(UUID.randomUUID(), "Иванов Иван Иванович", "СТ-001", 2022));
-        rStudent.save(new Student(UUID.randomUUID(), "Петрова Анна Сергеевна", "СТ-002", 2023));
+    StudentService sStudent(StudentRepository studentRepository) {
+        StudentService service = new StudentService(studentRepository);
+        studentRepository.save(new Student(UUID.randomUUID(), "Иванов Иван Иванович", "СТ-001", 2022));
+        studentRepository.save(new Student(UUID.randomUUID(), "Петрова Анна Сергеевна", "СТ-002", 2023));
         return service;
     }
 
     @Bean
-    SCourse sCourse(RCourse rCourse) {
-        SCourse service = new SCourse(rCourse);
-        rCourse.save(new Course(UUID.randomUUID(), "CS101", "Основы программирования", "Смирнов А.В.", 4));
-        rCourse.save(new Course(UUID.randomUUID(), "MATH201", "Высшая математика", "Козлов Д.П.", 5));
+    CourseService sCourse(CourseRepository courseRepository) {
+        CourseService service = new CourseService(courseRepository);
+        courseRepository.save(new Course(UUID.randomUUID(), "CS101", "Основы программирования", "Смирнов А.В.", 4));
+        courseRepository.save(new Course(UUID.randomUUID(), "MATH201", "Высшая математика", "Козлов Д.П.", 5));
         return service;
     }
 
     @Bean
-    SEnrollment sEnrollment(REnrollment rEnrollment) {
-        return new SEnrollment(rEnrollment);
+    EnrollmentService sEnrollment(EnrollmentRepository enrollmentRepository) {
+        return new EnrollmentService(enrollmentRepository);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console2000")
-    SStatistics sStatistics2000(SStudent sStudent) {
-        return new SStatistics(2000, sStudent);
+    StatisticsService sStatistics2000(StudentService studentService) {
+        return new StatisticsService(2000, studentService);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console1000")
-    SStatistics sStatistics1000(SStudent sStudent) {
-        return new SStatistics(1000, sStudent);
+    StatisticsService sStatistics1000(StudentService studentService) {
+        return new StatisticsService(1000, studentService);
     }
 
 }

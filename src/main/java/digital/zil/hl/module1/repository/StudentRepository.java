@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-public class RStudent {
+public class StudentRepository {
 
     public static final String NOT_FOUND = "Student with id %s not found";
     public static final String ALREADY_EXISTS = "Student with id %s already exists";

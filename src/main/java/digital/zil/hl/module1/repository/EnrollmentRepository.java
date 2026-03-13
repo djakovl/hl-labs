@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-public class REnrollment {
+public class EnrollmentRepository {
 
     public static final String NOT_FOUND = "Enrollment with id %s not found";
 
@@ -48,13 +48,20 @@ public class REnrollment {
     // Среднее количество студентов на курсе за всё время
     public double averageStudentsPerCourse() {
         if (storage.isEmpty()) return 0.0;
+
+        // Группируем ВСЕ записи (включая deleted/completed) по курсу
         Map<UUID, Long> perCourse = storage.values().stream()
-                .collect(Collectors.groupingBy(Enrollment::getCourseId, Collectors.counting()));
+                .collect(Collectors.groupingBy(
+                        Enrollment::getCourseId,
+                        Collectors.counting()
+                ));
+
         return perCourse.values().stream()
                 .mapToLong(Long::longValue)
                 .average()
                 .orElse(0.0);
     }
+
 
     public void clear() { storage.clear(); }
 }

@@ -1,7 +1,7 @@
 package digital.zil.hl.module1.controller;
 
 import digital.zil.hl.module1.model.Enrollment;
-import digital.zil.hl.module1.service.SEnrollment;
+import digital.zil.hl.module1.service.EnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,25 +11,25 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/enrollments")
-public class CEnrollment {
+public class EnrollmentController {
 
-    private final SEnrollment sEnrollment;
+    private final EnrollmentService enrollmentService;
 
     @Autowired
-    public CEnrollment(SEnrollment sEnrollment) {
-        this.sEnrollment = sEnrollment;
+    public EnrollmentController(EnrollmentService enrollmentService) {
+        this.enrollmentService = enrollmentService;
     }
 
     @GetMapping
-    public List<Enrollment> getAll() { return sEnrollment.getAll(); }
+    public List<Enrollment> getAll() { return enrollmentService.getAll(); }
 
     @GetMapping("/{id}")
-    public Enrollment getById(@PathVariable String id) { return sEnrollment.getById(id); }
+    public Enrollment getById(@PathVariable String id) { return enrollmentService.getById(id); }
 
     // body: { "studentId": "uuid", "courseId": "uuid" }
     @PostMapping("/")
     public Enrollment enroll(@RequestBody Map<String, String> body) {
-        return sEnrollment.enroll(
+        return enrollmentService.enroll(
                 UUID.fromString(body.get("studentId")),
                 UUID.fromString(body.get("courseId"))
         );
@@ -37,15 +37,15 @@ public class CEnrollment {
 
     @PatchMapping("/{id}/complete")
     public Enrollment complete(@PathVariable String id) {
-        return sEnrollment.complete(id);
+        return enrollmentService.complete(id);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) { sEnrollment.delete(id); }
+    public void delete(@PathVariable String id) { enrollmentService.delete(id); }
 
     // Статистика: среднее количество студентов на курсе за всё время
     @GetMapping("/stats/average")
     public Map<String, Double> averageStudentsPerCourse() {
-        return Map.of("averageStudentsPerCourse", sEnrollment.getAverageStudentsPerCourse());
+        return Map.of("averageStudentsPerCourse", enrollmentService.getAverageStudentsPerCourse());
     }
 }

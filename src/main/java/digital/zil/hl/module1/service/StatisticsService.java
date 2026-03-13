@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 
-public class SStatistics {
+public class StatisticsService {
 
 
     @Value("${statisticsservice.infostring:lines}")
@@ -12,11 +12,11 @@ public class SStatistics {
 
     final int delay;
 
-    private final SStudent sStudent;
+    private final StudentService studentService;
 
-    public SStatistics(int delay, SStudent sStudent) {
+    public StatisticsService(int delay, StudentService studentService) {
         this.delay = delay;
-        this.sStudent = sStudent;
+        this.studentService = studentService;
     }
 
     @Async(value = "applicationTaskExecutor")
@@ -24,7 +24,7 @@ public class SStatistics {
     public void scheduleFixedRateTaskAsync() throws InterruptedException {
         System.out.println(
                 Thread.currentThread().getName() + " - Fixed rate task async - "+ delay + " - " + infoString + " - "
-                        + sStudent.getAll().size());
+                        + studentService.getAll().size());
         Thread.sleep(delay);
     }
 }
