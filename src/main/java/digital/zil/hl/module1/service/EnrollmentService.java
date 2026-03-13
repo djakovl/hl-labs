@@ -12,12 +12,13 @@ import java.util.UUID;
 
 public class EnrollmentService {
 
-    private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
 
-    public EnrollmentService(CourseRepository courseRepository, EnrollmentRepository enrollmentRepository) {
-        this.courseRepository = courseRepository;
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             CourseRepository courseRepository) {
         this.enrollmentRepository = enrollmentRepository;
+        this.courseRepository = courseRepository;
     }
 
     public List<Enrollment> getAll() { return enrollmentRepository.findAll(); }
@@ -41,13 +42,6 @@ public class EnrollmentService {
         return enrollmentRepository.averageStudentsPerCourse();
     }
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository,
-                             CourseRepository courseRepository) {
-        this.enrollmentRepository = enrollmentRepository;
-        this.courseRepository = courseRepository;
-    }
-
-    // Возвращает Map: "Название курса" -> среднее (здесь — общее кол-во записей)
     public Map<String, Long> getStatsPerCourse() {
         Map<UUID, Long> perCourse = enrollmentRepository.studentsPerCourse();
         Map<String, Long> result = new LinkedHashMap<>();
