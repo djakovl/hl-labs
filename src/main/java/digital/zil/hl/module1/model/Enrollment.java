@@ -9,7 +9,7 @@ public class Enrollment {
     private UUID studentId;
     private UUID courseId;
     private LocalDate enrollmentDate;
-    private String status; // ACTIVE / COMPLETED
+    private String status;
 
     public Enrollment() {}
 

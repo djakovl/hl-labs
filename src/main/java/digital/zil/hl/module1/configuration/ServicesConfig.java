@@ -9,6 +9,7 @@ import digital.zil.hl.module1.service.SCourse;
 import digital.zil.hl.module1.service.SEnrollment;
 import digital.zil.hl.module1.service.SStudent;
 import digital.zil.hl.module1.service.SStatistics;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,4 +38,17 @@ public class ServicesConfig {
     SEnrollment sEnrollment(REnrollment rEnrollment) {
         return new SEnrollment(rEnrollment);
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console2000")
+    SStatistics sStatistics2000(SStudent sStudent) {
+        return new SStatistics(2000, sStudent);
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console1000")
+    SStatistics sStatistics1000(SStudent sStudent) {
+        return new SStatistics(1000, sStudent);
+    }
+
 }
