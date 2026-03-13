@@ -8,6 +8,7 @@ import digital.zil.hl.module1.repository.RStudent;
 import digital.zil.hl.module1.service.SCourse;
 import digital.zil.hl.module1.service.SEnrollment;
 import digital.zil.hl.module1.service.SStudent;
+import digital.zil.hl.module1.service.SStatistics;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
