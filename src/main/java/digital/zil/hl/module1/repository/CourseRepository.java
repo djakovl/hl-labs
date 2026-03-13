@@ -21,7 +21,7 @@ public class CourseRepository {
 
     public Course findById(UUID id) {
         Course c = storage.get(id);
-        if (c == null) throw new RuntimeException(String.format(NOT_FOUND, id));
+        if (c == null || c.isDeleted()) throw new RuntimeException(String.format(NOT_FOUND, id));
         return c;
     }
 
@@ -41,8 +41,6 @@ public class CourseRepository {
     }
 
     public void delete(UUID id) {
-        if (storage.remove(id) == null)
-            throw new RuntimeException(String.format(NOT_FOUND, id));
         Course s = storage.get(id);
         if (s == null) throw new RuntimeException(String.format(NOT_FOUND, id));
         s.setDeleted(true);

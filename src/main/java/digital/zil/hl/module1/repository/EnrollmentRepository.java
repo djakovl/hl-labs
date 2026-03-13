@@ -21,7 +21,9 @@ public class EnrollmentRepository {
 
     public Enrollment findById(UUID id) {
         Enrollment e = storage.get(id);
-        if (e == null) throw new RuntimeException(String.format(NOT_FOUND, id));
+        if (e == null || e.isDeleted()) {
+            throw new RuntimeException(String.format(NOT_FOUND, id));
+        }
         return e;
     }
 
@@ -38,8 +40,6 @@ public class EnrollmentRepository {
     }
 
     public void delete(UUID id) {
-        if (storage.remove(id) == null)
-            throw new RuntimeException(String.format(NOT_FOUND, id));
         Enrollment s = storage.get(id);
         if (s == null) throw new RuntimeException(String.format(NOT_FOUND, id));
         s.setDeleted(true);
