@@ -35,11 +35,6 @@ public class ServicesConfig {
     }
 
     @Bean
-    EnrollmentService sEnrollment(EnrollmentRepository enrollmentRepository) {
-        return new EnrollmentService(enrollmentRepository);
-    }
-
-    @Bean
     @ConditionalOnProperty(prefix = "statistics", name = "service", havingValue = "console2000")
     StatisticsService sStatistics2000(StudentService studentService) {
         return new StatisticsService(2000, studentService);
@@ -50,5 +45,12 @@ public class ServicesConfig {
     StatisticsService sStatistics1000(StudentService studentService) {
         return new StatisticsService(1000, studentService);
     }
+
+    @Bean
+    EnrollmentService enrollmentService(EnrollmentRepository enrollmentRepository,
+                                        CourseRepository courseRepository) {
+        return new EnrollmentService(enrollmentRepository, courseRepository);
+    }
+
 
 }

@@ -1,17 +1,22 @@
 package digital.zil.hl.module1.service;
 
 import digital.zil.hl.module1.model.Enrollment;
+import digital.zil.hl.module1.repository.CourseRepository;
 import digital.zil.hl.module1.repository.EnrollmentRepository;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class EnrollmentService {
 
+    private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository) {
+    public EnrollmentService(CourseRepository courseRepository, EnrollmentRepository enrollmentRepository) {
+        this.courseRepository = courseRepository;
         this.enrollmentRepository = enrollmentRepository;
     }
 
@@ -34,5 +39,26 @@ public class EnrollmentService {
 
     public double getAverageStudentsPerCourse() {
         return enrollmentRepository.averageStudentsPerCourse();
+    }
+
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             CourseRepository courseRepository) {
+        this.enrollmentRepository = enrollmentRepository;
+        this.courseRepository = courseRepository;
+    }
+
+    // Возвращает Map: "Название курса" -> среднее (здесь — общее кол-во записей)
+    public Map<String, Long> getStatsPerCourse() {
+        Map<UUID, Long> perCourse = enrollmentRepository.studentsPerCourse();
+        Map<String, Long> result = new LinkedHashMap<>();
+        perCourse.forEach((courseId, count) -> {
+            try {
+                String courseName = courseRepository.findById(courseId).getName();
+                result.put(courseName, count);
+            } catch (RuntimeException e) {
+                result.put(courseId.toString(), count);
+            }
+        });
+        return result;
     }
 }

@@ -45,7 +45,8 @@ public class EnrollmentController {
 
     // Статистика: среднее количество студентов на курсе за всё время
     @GetMapping("/stats/average")
-    public Map<String, Double> averageStudentsPerCourse() {
-        return Map.of("averageStudentsPerCourse", enrollmentService.getAverageStudentsPerCourse());
+    public Map<String, Long> statsPerCourse() {
+        return enrollmentService.getStatsPerCourse();
     }
+
 }

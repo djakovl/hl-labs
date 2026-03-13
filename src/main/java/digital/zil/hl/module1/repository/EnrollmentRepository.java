@@ -62,6 +62,13 @@ public class EnrollmentRepository {
                 .orElse(0.0);
     }
 
+    public Map<UUID, Long> studentsPerCourse() {
+        return storage.values().stream()
+                .collect(Collectors.groupingBy(
+                        Enrollment::getCourseId,
+                        Collectors.counting()
+                ));
+    }
 
     public void clear() { storage.clear(); }
 }
