@@ -10,6 +10,8 @@ public class Enrollment {
     private UUID courseId;
     private LocalDate enrollmentDate;
     private String status;
+    private boolean deleted = false;
+
 
     public Enrollment() {}
 
@@ -35,6 +37,9 @@ public class Enrollment {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     @Override
     public String toString() {

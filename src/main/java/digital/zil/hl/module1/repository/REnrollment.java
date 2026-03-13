@@ -14,7 +14,9 @@ public class REnrollment {
     private static final Map<UUID, Enrollment> storage = new HashMap<>();
 
     public List<Enrollment> findAll() {
-        return new ArrayList<>(storage.values());
+        return storage.values().stream()
+                .filter(s -> !s.isDeleted())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Enrollment findById(UUID id) {
@@ -38,6 +40,9 @@ public class REnrollment {
     public void delete(UUID id) {
         if (storage.remove(id) == null)
             throw new RuntimeException(String.format(NOT_FOUND, id));
+        Enrollment s = storage.get(id);
+        if (s == null) throw new RuntimeException(String.format(NOT_FOUND, id));
+        s.setDeleted(true);
     }
 
     // Среднее количество студентов на курсе за всё время

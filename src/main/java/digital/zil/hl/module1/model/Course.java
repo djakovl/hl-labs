@@ -9,6 +9,7 @@ public class Course {
     private String name;
     private String teacher;
     private int credits;
+    private boolean deleted = false;
 
     public Course() {}
 
@@ -34,6 +35,9 @@ public class Course {
 
     public int getCredits() { return credits; }
     public void setCredits(int credits) { this.credits = credits; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     @Override
     public String toString() {

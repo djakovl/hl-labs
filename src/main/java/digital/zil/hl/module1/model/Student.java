@@ -8,6 +8,8 @@ public class Student {
     private String fio;
     private String studentCard;
     private int enrollmentYear;
+    private boolean deleted = false;
+
 
     public Student() {}
 
@@ -29,6 +31,9 @@ public class Student {
 
     public int getEnrollmentYear() { return enrollmentYear; }
     public void setEnrollmentYear(int enrollmentYear) { this.enrollmentYear = enrollmentYear; }
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
     @Override
     public String toString() {

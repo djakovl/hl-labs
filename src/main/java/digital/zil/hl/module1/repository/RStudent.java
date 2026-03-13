@@ -14,7 +14,9 @@ public class RStudent {
     private static final Map<UUID, Student> storage = new HashMap<>();
 
     public List<Student> findAll() {
-        return new ArrayList<>(storage.values());
+        return storage.values().stream()
+                .filter(s -> !s.isDeleted())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Student findById(UUID id) {
@@ -41,6 +43,9 @@ public class RStudent {
     public void delete(UUID id) {
         if (storage.remove(id) == null)
             throw new RuntimeException(String.format(NOT_FOUND, id));
+        Student s = storage.get(id);
+        if (s == null) throw new RuntimeException(String.format(NOT_FOUND, id));
+        s.setDeleted(true);
     }
 
     public void clear() { storage.clear(); }
