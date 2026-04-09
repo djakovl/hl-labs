@@ -26,7 +26,6 @@ public class EnrollmentController {
     @GetMapping("/{id}")
     public Enrollment getById(@PathVariable String id) { return enrollmentService.getById(id); }
 
-    // body: { "studentId": "uuid", "courseId": "uuid" }
     @PostMapping("/")
     public Enrollment enroll(@RequestBody Map<String, String> body) {
         return enrollmentService.enroll(
@@ -45,8 +44,8 @@ public class EnrollmentController {
 
     // Статистика: среднее количество студентов на курсе за всё время
     @GetMapping("/stats/average")
-    public Map<String, Long> statsPerCourse() {
-        return enrollmentService.getStatsPerCourse();
+    public double statsAverage() {
+        return enrollmentService.getAverageStudentsPerCourse();
     }
 
 }
