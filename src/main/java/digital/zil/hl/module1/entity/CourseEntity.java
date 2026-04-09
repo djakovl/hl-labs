@@ -29,4 +29,6 @@ public class CourseEntity {
     public void setCredits(int credits) { this.credits = credits; }
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
 }
