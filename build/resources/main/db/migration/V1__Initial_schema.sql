@@ -3,7 +3,6 @@ create table t_course (
                           code varchar(50) not null unique,
                           name varchar(255) not null,
                           teacher varchar(255),
-                          year int not null default 2025
                           credits int,
                           deleted boolean not null default false
 );

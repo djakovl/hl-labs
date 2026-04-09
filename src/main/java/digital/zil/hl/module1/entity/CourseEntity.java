@@ -14,6 +14,7 @@ public class CourseEntity {
     private String teacher;
     private int credits;
     private boolean deleted = false;
+    private Integer year;
 
     public CourseEntity() {}
     public UUID getId() { return id; }
