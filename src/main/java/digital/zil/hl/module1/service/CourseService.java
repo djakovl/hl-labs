@@ -1,37 +1,49 @@
 package digital.zil.hl.module1.service;
 
 import digital.zil.hl.module1.controller.exeption.AppException;
-import digital.zil.hl.module1.entity.CourseEntity;
+import digital.zil.hl.module1.mapper.CourseMapper;
+import digital.zil.hl.module1.model.Course;
 import digital.zil.hl.module1.repository.CourseRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
+
     private final CourseRepository courseRepository;
 
     public CourseService(CourseRepository courseRepository) {
         this.courseRepository = courseRepository;
     }
 
-    public List<CourseEntity> getAll() { return courseRepository.findAllByDeletedFalse(); }
+    public List<Course> getAll() {
+        return courseRepository.findAllByDeletedFalse().stream()
+                .map(CourseMapper::toModel)
+                .collect(Collectors.toList());
+    }
 
-    public CourseEntity getById(String id) {
+    public Course getById(String id) {
         return courseRepository.findByIdAndDeletedFalse(UUID.fromString(id))
+                .map(CourseMapper::toModel)
                 .orElseThrow(() -> new AppException("Course not found: " + id));
     }
 
-    public CourseEntity save(CourseEntity course) { return courseRepository.save(course); }
+    public Course save(Course course) {
+        return CourseMapper.toModel(courseRepository.save(CourseMapper.toEntity(course)));
+    }
 
-    public CourseEntity update(String id, CourseEntity course) {
+    public Course update(String id, Course course) {
         course.setId(UUID.fromString(id));
-        return courseRepository.save(course);
+        return CourseMapper.toModel(courseRepository.save(CourseMapper.toEntity(course)));
     }
 
     public void delete(String id) {
-        CourseEntity c = getById(id);
-        c.setDeleted(true);
-        courseRepository.save(c);
+        var entity = courseRepository.findByIdAndDeletedFalse(UUID.fromString(id))
+                .orElseThrow(() -> new AppException("Course not found: " + id));
+        entity.setDeleted(true);
+        courseRepository.save(entity);
     }
 }

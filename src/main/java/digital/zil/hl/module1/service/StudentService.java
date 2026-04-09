@@ -1,37 +1,49 @@
 package digital.zil.hl.module1.service;
 
 import digital.zil.hl.module1.controller.exeption.AppException;
-import digital.zil.hl.module1.entity.StudentEntity;
+import digital.zil.hl.module1.mapper.StudentMapper;
+import digital.zil.hl.module1.model.Student;
 import digital.zil.hl.module1.repository.StudentRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
+
     private final StudentRepository studentRepository;
 
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
 
-    public List<StudentEntity> getAll() { return studentRepository.findAllByDeletedFalse(); }
+    public List<Student> getAll() {
+        return studentRepository.findAllByDeletedFalse().stream()
+                .map(StudentMapper::toModel)
+                .collect(Collectors.toList());
+    }
 
-    public StudentEntity getById(String id) {
+    public Student getById(String id) {
         return studentRepository.findByIdAndDeletedFalse(UUID.fromString(id))
+                .map(StudentMapper::toModel)
                 .orElseThrow(() -> new AppException("Student not found: " + id));
     }
 
-    public StudentEntity save(StudentEntity student) { return studentRepository.save(student); }
+    public Student save(Student student) {
+        return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
+    }
 
-    public StudentEntity update(String id, StudentEntity student) {
+    public Student update(String id, Student student) {
         student.setId(UUID.fromString(id));
-        return studentRepository.save(student);
+        return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
     }
 
     public void delete(String id) {
-        StudentEntity s = getById(id);
-        s.setDeleted(true);
-        studentRepository.save(s);
+        var entity = studentRepository.findByIdAndDeletedFalse(UUID.fromString(id))
+                .orElseThrow(() -> new AppException("Student not found: " + id));
+        entity.setDeleted(true);
+        studentRepository.save(entity);
     }
 }

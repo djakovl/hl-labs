@@ -42,10 +42,8 @@ public class EnrollmentController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { enrollmentService.delete(id); }
 
-    // Статистика: среднее количество студентов на курсе за всё время
     @GetMapping("/stats/average")
     public double statsAverage() {
         return enrollmentService.getAverageStudentsPerCourse();
     }
-
 }
