@@ -1,14 +1,17 @@
 package digital.zil.hl.module1.service;
 
 import digital.zil.hl.module1.controller.exeption.AppException;
+import digital.zil.hl.module1.entity.CourseEntity;
 import digital.zil.hl.module1.entity.EnrollmentEntity;
 import digital.zil.hl.module1.mapper.EnrollmentMapper;
 import digital.zil.hl.module1.model.Enrollment;
+import digital.zil.hl.module1.repository.CourseRepository;
 import digital.zil.hl.module1.repository.EnrollmentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,9 +19,12 @@ import java.util.stream.Collectors;
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
+    private final CourseRepository courseRepository;
 
-    public EnrollmentService(EnrollmentRepository enrollmentRepository) {
+    public EnrollmentService(EnrollmentRepository enrollmentRepository,
+                             CourseRepository courseRepository) {
         this.enrollmentRepository = enrollmentRepository;
+        this.courseRepository = courseRepository;
     }
 
     public List<Enrollment> getAll() {
@@ -34,6 +40,17 @@ public class EnrollmentService {
     }
 
     public Enrollment enroll(UUID studentId, UUID courseId) {
+        var course = courseRepository.findByIdAndDeletedFalse(courseId)
+                .orElseThrow(() -> new AppException("Course not found: " + courseId));
+
+        int currentYear = LocalDate.now().getYear();
+        if (course.getYear() != null && course.getYear() < currentYear) {
+            throw new AppException(
+                    "Cannot enroll in course from year " + course.getYear() +
+                    ". Current year is " + currentYear
+            );
+        }
+
         EnrollmentEntity e = new EnrollmentEntity();
         e.setStudentId(studentId);
         e.setCourseId(courseId);
@@ -56,7 +73,20 @@ public class EnrollmentService {
         enrollmentRepository.save(entity);
     }
 
-    public double getAverageStudentsPerCourse() {
-        return enrollmentRepository.averageStudentsPerCourse();
+    public Map<String, Double> averageStudentsPerCourse() {
+        Map<UUID, Long> countPerCourse = enrollmentRepository.findAllByDeletedFalse()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        EnrollmentEntity::getCourseId,
+                        Collectors.counting()
+                ));
+
+        return courseRepository.findAllByDeletedFalse()
+                .stream()
+                .filter(c -> countPerCourse.containsKey(c.getId()))
+                .collect(Collectors.groupingBy(
+                        CourseEntity::getCode,
+                        Collectors.averagingLong(c -> countPerCourse.getOrDefault(c.getId(), 0L))
+                ));
     }
 }

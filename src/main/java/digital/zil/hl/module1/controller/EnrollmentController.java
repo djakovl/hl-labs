@@ -43,7 +43,7 @@ public class EnrollmentController {
     public void delete(@PathVariable String id) { enrollmentService.delete(id); }
 
     @GetMapping("/stats/average")
-    public double statsAverage() {
-        return enrollmentService.getAverageStudentsPerCourse();
+    public Map<String, Double> statsAverage() {
+        return enrollmentService.averageStudentsPerCourse();
     }
 }
