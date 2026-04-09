@@ -16,7 +16,7 @@ public class EnrollmentRepository {
     public List<Enrollment> findAll() {
         return storage.values().stream()
                 .filter(s -> !s.isDeleted())
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public Enrollment findById(UUID id) {
@@ -45,11 +45,9 @@ public class EnrollmentRepository {
         s.setDeleted(true);
     }
 
-    // Среднее количество студентов на курсе за всё время
     public double averageStudentsPerCourse() {
         if (storage.isEmpty()) return 0.0;
 
-        // Группируем ВСЕ записи (включая deleted/completed) по курсу
         Map<UUID, Long> perCourse = storage.values().stream()
                 .collect(Collectors.groupingBy(
                         Enrollment::getCourseId,
@@ -62,10 +60,10 @@ public class EnrollmentRepository {
                 .orElse(0.0);
     }
 
-    public Map<UUID, Long> studentsPerCourse() {
+    public Map<String, Long> studentsPerCourse() {
         return storage.values().stream()
                 .collect(Collectors.groupingBy(
-                        Enrollment::getCourseId,
+                        e -> e.getCourseId().toString(),
                         Collectors.counting()
                 ));
     }
