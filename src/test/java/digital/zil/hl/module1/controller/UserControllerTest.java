@@ -14,7 +14,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import digital.zil.hl.module1.Module1Application;
 import digital.zil.hl.module1.entity.PhoneEntity;
-import digital.zil.hl.module1.entity.UserEntity;
 import digital.zil.hl.module1.mapper.UserMapper;
 import digital.zil.hl.module1.repository.UserRepository;
 

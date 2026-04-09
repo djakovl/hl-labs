@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import digital.zil.hl.module1.entity.UserEntity;
 import digital.zil.hl.module1.repository.UserRepository;
 
 import java.util.Arrays;

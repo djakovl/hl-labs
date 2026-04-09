@@ -6,11 +6,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class UserExceptionHandler {
+public class AppExceptionHandler {
 
-    @ExceptionHandler
-    public ResponseEntity<String> onUserException(UserException e) {
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> onException(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
-
 }
