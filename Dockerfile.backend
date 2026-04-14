@@ -1,0 +1,28 @@
+### build stage
+FROM eclipse-temurin:25-jdk-ubi10-minimal AS build
+
+WORKDIR /app
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+
+RUN chmod +x gradlew && \
+    sed -i 's/\r$//' gradlew
+
+RUN ./gradlew dependencies --no-daemon
+
+COPY src src
+RUN ./gradlew bootJar --no-daemon
+
+### run stage
+FROM eclipse-temurin:25-jdk-ubi10-minimal
+
+WORKDIR /app
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+COPY --from=build /app/build/libs/*[!plain].jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
