@@ -1,4 +1,4 @@
-create table t_course (
+create table if not exists t_course (
     id uuid primary key default gen_random_uuid(),
     code varchar(50) not null unique,
     name varchar(255) not null,
@@ -8,7 +8,7 @@ create table t_course (
     deleted boolean not null default false
 );
 
-create table t_student (
+create table if not exists t_student (
     id uuid primary key default gen_random_uuid(),
     fio varchar(255) not null,
     student_card varchar(100) not null unique,
@@ -16,7 +16,7 @@ create table t_student (
     deleted boolean not null default false
 );
 
-create table t_enrollment (
+create table if not exists t_enrollment (
     id uuid primary key default gen_random_uuid(),
     student_id uuid not null references t_student(id),
     course_id uuid not null references t_course(id),
