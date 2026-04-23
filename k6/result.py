@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# --- Загрузка ---
 with open('results/raw.json') as f:
     lines = [json.loads(l) for l in f]
 
@@ -19,43 +20,66 @@ df = pd.DataFrame(rows)
 df['time'] = pd.to_datetime(df['time'])
 df['elapsed'] = (df['time'] - df['time'].min()).dt.total_seconds()
 
-vus_df = df[df['metric'] == 'vus'][['elapsed', 'value']].copy()
-vus_df.columns = ['elapsed', 'vus']
+# --- Этапы: подбери длительности под свой k6-скрипт ---
+stage_windows = {
+    10: (20,  80),
+    20: (100, 160),
+    40: (180, 240),
+    80: (260, 320),
+}
 
-targets = [10, 20, 40, 80]
+endpoints = [
+    ('student', 'steelblue', 'POST /students/'),
+    ('average', 'tomato',    'GET /stats/average'),
+]
+
+print("=== Длительность теста ===")
+print(f"elapsed max: {df['elapsed'].max():.1f}s")
+
+print("\n=== Данные http_req_duration по временным окнам ===")
+stage_windows = {10: (20, 80), 20: (100, 160), 40: (180, 240), 80: (260, 320)}
+for vus, (t0, t1) in stage_windows.items():
+    mask = (df['elapsed'] >= t0) & (df['elapsed'] < t1) & (df['metric'] == 'http_req_duration')
+    print(f"  VUS {vus:2d} ({t0}–{t1}s): {mask.sum()} записей")
+
+print("\n=== Уникальные значения endpoint ===")
+print(df[df['metric'] == 'http_req_duration']['endpoint'].value_counts())
+
+print("\n=== Последняя временная метка ===")
+print(df['time'].max())
+
+# --- Сбор результатов ---
+results = {ep: {'vus': [], 'avg_ms': []} for ep, _, _ in endpoints}
+
+for vus_level, (t_start, t_end) in stage_windows.items():
+    time_mask = (df['elapsed'] >= t_start) & (df['elapsed'] < t_end)
+
+    for endpoint, _, _ in endpoints:
+        mask = time_mask & (df['metric'] == 'http_req_duration') & (df['endpoint'] == endpoint)
+        avg = df[mask]['value'].mean()
+        results[endpoint]['vus'].append(vus_level)
+        results[endpoint]['avg_ms'].append(round(avg, 2))
+
+# --- Вывод таблицы ---
+for endpoint, _, label in endpoints:
+    print(f"\n{label}:")
+    print(pd.DataFrame(results[endpoint]))
+
+# --- График ---
+targets = list(stage_windows.keys())
 
 plt.figure(figsize=(10, 6))
 
-for endpoint, color, label in [
-    ('student', 'steelblue', 'POST /students/'),
-    ('average',   'tomato',    'GET /stats/average'),
-]:
-    latency = df[
-        (df['metric'] == 'http_req_duration') & (df['endpoint'] == endpoint)
-    ][['elapsed', 'value']].copy()
+for endpoint, color, label in endpoints:
+    vus_vals = results[endpoint]['vus']
+    avg_vals = results[endpoint]['avg_ms']
 
-    latency = pd.merge_asof(
-        latency.sort_values('elapsed'),
-        vus_df.sort_values('elapsed'),
-        on='elapsed'
-    )
+    plt.plot(vus_vals, avg_vals, marker='o', linewidth=2, color=color, label=label)
 
-    latency['vus_bucket'] = latency['vus'].apply(
-        lambda v: min(targets, key=lambda t: abs(t - v))
-    )
-
-    result = latency.groupby('vus_bucket')['value'].mean().reset_index()
-    result.columns = ['vus', 'avg_ms']
-    result['avg_ms'] = result['avg_ms'].round(2)
-    print(f"\n{label}:")
-    print(result)
-
-    plt.plot(result['vus'], result['avg_ms'], marker='o', linewidth=2, color=color, label=label)
-
-    for _, row in result.iterrows():
-        plt.annotate(f"{row['avg_ms']}ms",
-                     (row['vus'], row['avg_ms']),
-                     textcoords="offset points", xytext=(0, 10), ha='center', fontsize=9)
+    for vus, ms in zip(vus_vals, avg_vals):
+        plt.annotate(f"{ms}ms", (vus, ms),
+                     textcoords="offset points", xytext=(0, 10),
+                     ha='center', fontsize=9)
 
 plt.title('Зависимость времени отклика от нагрузки (Тест удвоения)', fontsize=14)
 plt.xlabel('Количество VUs', fontsize=12)

@@ -71,9 +71,6 @@ def seed_enrollments(count, no_clear):
     student_ids = create_many("students", make_student, student_count)
     course_ids  = create_many("courses",  make_course,  course_count)
     
-    print("[DEBUG] student sample:", student_ids[:3])  # ← добавь это
-    print("[DEBUG] course sample:", course_ids[:3])    # ← и это
-
     if not student_ids or not course_ids:
         print("[ERROR] Нет студентов или курсов")
         return
@@ -101,12 +98,28 @@ SEEDERS = {
 
 # ── CLI ──────────────────────────────────────────────────────────
 
+CLEAR_TARGETS = {
+    "students":    ["enrollments", "students"],
+    "courses":     ["enrollments", "courses"],
+    "enrollments": ["enrollments"],
+}
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--count",    type=int, default=500)
-    parser.add_argument("--endpoint", type=str, default="students",
+    parser.add_argument("--endpoint", type=str, default=None,
                         choices=SEEDERS.keys())
-    parser.add_argument("--no-clear", action="store_true")
+    parser.add_argument("--no-clear", action="store_true",
+                        help="Не очищать перед сидированием")
+    parser.add_argument("--clear",    action="store_true",
+                        help="Очистить БД. Без --endpoint — всё, с --endpoint — только связанные таблицы")
     args = parser.parse_args()
 
-    SEEDERS[args.endpoint](args.count, args.no_clear)
+    if args.clear:
+        targets = CLEAR_TARGETS[args.endpoint] if args.endpoint else ["enrollments", "students", "courses"]
+        for ep in targets:
+            clear(ep)
+    else:
+        if args.endpoint is None:
+            args.endpoint = "enrollments"  # дефолт только для сидирования
+        SEEDERS[args.endpoint](args.count, args.no_clear)

@@ -22,7 +22,7 @@ export const options = {
   scenarios: {
     create_students: {
       executor: 'ramping-vus',
-      startVUs: 1,
+      //startVUs: 1,
       stages: [
         { duration: '20s', target: 10 },
         { duration: '60s', target: 10 },
@@ -38,7 +38,7 @@ export const options = {
     },
     get_stats: {
       executor: 'ramping-vus',
-      startVUs: 1,
+      //startVUs: 1,
       stages: [
         { duration: '20s', target: 10 },
         { duration: '60s', target: 10 },
