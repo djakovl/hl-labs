@@ -53,3 +53,4 @@ Thumbs.db
 
 .env
 application.properties
+./k6/results
