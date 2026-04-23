@@ -4,6 +4,7 @@ import digital.zil.hl.module1.model.Student;
 import digital.zil.hl.module1.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,5 +38,6 @@ public class StudentController {
 
     
     @DeleteMapping("/clear")
+    @Transactional
     public void clear() { studentService.clear();}
 }

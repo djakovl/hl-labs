@@ -90,7 +90,5 @@ public class EnrollmentService {
                 ));
     }
 
-    public void clear() {
-        enrollmentRepository.deleteAll();
-    }
+    public void clear() { enrollmentRepository.clearAll(); }
 }

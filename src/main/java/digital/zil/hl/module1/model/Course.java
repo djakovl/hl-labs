@@ -10,6 +10,7 @@ public class Course {
     private String teacher;
     private int credits;
     private boolean deleted = false;
+    private Integer year;
 
     public Course() {}
 
@@ -38,6 +39,9 @@ public class Course {
 
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
 
     @Override
     public String toString() {

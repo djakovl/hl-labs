@@ -13,6 +13,7 @@ public class CourseMapper {
         e.setName(model.getName());
         e.setTeacher(model.getTeacher());
         e.setCredits(model.getCredits());
+        e.setYear(model.getYear()); 
         return e;
     }
 
@@ -23,6 +24,7 @@ public class CourseMapper {
         c.setName(e.getName());
         c.setTeacher(e.getTeacher());
         c.setCredits(e.getCredits());
+        c.setYear(e.getYear());
         return c;
     }
 }

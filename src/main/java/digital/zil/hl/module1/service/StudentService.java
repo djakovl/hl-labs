@@ -47,7 +47,5 @@ public class StudentService {
         studentRepository.save(entity);
     }
     
-    public void clear() {
-        studentRepository.deleteAll();
-    }
+    public void clear() { studentRepository.clearAll(); }
 }
