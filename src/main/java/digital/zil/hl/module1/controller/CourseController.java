@@ -34,4 +34,7 @@ public class CourseController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { courseService.delete(id); }
+    
+    @DeleteMapping("/clear")
+    public void clear() { courseService.clear();}
 }

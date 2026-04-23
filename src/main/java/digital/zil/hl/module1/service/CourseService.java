@@ -46,4 +46,8 @@ public class CourseService {
         entity.setDeleted(true);
         courseRepository.save(entity);
     }
+
+    public void clear() {
+        courseRepository.deleteAll();
+    }
 }

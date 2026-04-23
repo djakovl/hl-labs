@@ -89,4 +89,8 @@ public class EnrollmentService {
                         Collectors.averagingLong(c -> countPerCourse.getOrDefault(c.getId(), 0L))
                 ));
     }
+
+    public void clear() {
+        enrollmentRepository.deleteAll();
+    }
 }

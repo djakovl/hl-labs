@@ -46,4 +46,6 @@ public class EnrollmentController {
     public Map<String, Double> statsAverage() {
         return enrollmentService.averageStudentsPerCourse();
     }
+    @DeleteMapping("/clear")
+    public void clear() { enrollmentService.clear();}
 }

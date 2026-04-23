@@ -46,4 +46,8 @@ public class StudentService {
         entity.setDeleted(true);
         studentRepository.save(entity);
     }
+    
+    public void clear() {
+        studentRepository.deleteAll();
+    }
 }

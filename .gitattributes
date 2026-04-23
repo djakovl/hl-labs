@@ -1,0 +1,13 @@
+# Normalize all text files to LF in repo; checkout native (CRLF on Win, LF on Mac/Linux)
+* text=auto
+
+# Enforce LF for specific web/source files regardless of OS
+*.js text eol=lf
+*.html text eol=lf
+
+# Enforce CRLF for Windows-specific scripts
+*.bat text eol=crlf
+
+# Mark images as binary to prevent corruption
+*.png binary
+*.jpg binary
