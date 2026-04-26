@@ -1,92 +1,165 @@
 import json
+import os
+import re
+import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# --- Загрузка ---
-with open('results/raw.json') as f:
-    lines = [json.loads(l) for l in f]
+RESULTS_DIR = "results"
+OUT_DIR = os.path.join(RESULTS_DIR, "plots")
+os.makedirs(OUT_DIR, exist_ok=True)
 
-rows = []
-for item in lines:
-    if item.get('type') == 'Point':
-        rows.append({
-            'time':     item['data']['time'],
-            'metric':   item['metric'],
-            'value':    item['data']['value'],
-            'endpoint': item['data'].get('tags', {}).get('endpoint', ''),
-        })
+FILENAME_RE = re.compile(
+    r"(?P<origin>local|server|backend)_cpu(?P<cpu>\d+(?:\.\d+)?)_w(?P<write>\d+)_r(?P<read>\d+)\.json"
+)
 
-df = pd.DataFrame(rows)
-df['time'] = pd.to_datetime(df['time'])
-df['elapsed'] = (df['time'] - df['time'].min()).dt.total_seconds()
 
-# --- Этапы: подбери длительности под свой k6-скрипт ---
-stage_windows = {
-    10: (20,  80),
-    20: (100, 160),
-    40: (180, 240),
-    80: (260, 320),
-}
+def parse_file_meta(path):
+    m = FILENAME_RE.match(os.path.basename(path))
+    if not m:
+        return None
 
-endpoints = [
-    ('student', 'steelblue', 'POST /students/'),
-    ('average', 'tomato',    'GET /stats/average'),
-]
+    d = m.groupdict()
+    d["cpu"] = float(d["cpu"])
+    d["write"] = int(d["write"])
+    d["read"] = int(d["read"])
+    d["profile"] = f"{d['write']}/{d['read']}"
 
-print("=== Длительность теста ===")
-print(f"elapsed max: {df['elapsed'].max():.1f}s")
+    if d["origin"] == "local":
+        d["origin"] = "local->server"
+    else:
+        d["origin"] = "server->server"
 
-print("\n=== Данные http_req_duration по временным окнам ===")
-stage_windows = {10: (20, 80), 20: (100, 160), 40: (180, 240), 80: (260, 320)}
-for vus, (t0, t1) in stage_windows.items():
-    mask = (df['elapsed'] >= t0) & (df['elapsed'] < t1) & (df['metric'] == 'http_req_duration')
-    print(f"  VUS {vus:2d} ({t0}–{t1}s): {mask.sum()} записей")
+    return d
 
-print("\n=== Уникальные значения endpoint ===")
-print(df[df['metric'] == 'http_req_duration']['endpoint'].value_counts())
 
-print("\n=== Последняя временная метка ===")
-print(df['time'].max())
+def load_k6_json(path, meta):
+    rows = []
 
-# --- Сбор результатов ---
-results = {ep: {'vus': [], 'avg_ms': []} for ep, _, _ in endpoints}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            try:
+                d = json.loads(line)
+            except json.JSONDecodeError:
+                continue
 
-for vus_level, (t_start, t_end) in stage_windows.items():
-    time_mask = (df['elapsed'] >= t_start) & (df['elapsed'] < t_end)
+            if d.get("type") != "Point":
+                continue
 
-    for endpoint, _, _ in endpoints:
-        mask = time_mask & (df['metric'] == 'http_req_duration') & (df['endpoint'] == endpoint)
-        avg = df[mask]['value'].mean()
-        results[endpoint]['vus'].append(vus_level)
-        results[endpoint]['avg_ms'].append(round(avg, 2))
+            metric = d.get("metric")
+            data = d.get("data", {})
+            tags = data.get("tags", {})
+            value = data.get("value")
 
-# --- Вывод таблицы ---
-for endpoint, _, label in endpoints:
-    print(f"\n{label}:")
-    print(pd.DataFrame(results[endpoint]))
+            if metric != "http_req_duration" or value is None:
+                continue
 
-# --- График ---
-targets = list(stage_windows.keys())
+            rows.append(
+                {
+                    "time": data.get("time"),
+                    "value": value,
+                    "scenario": tags.get("scenario"),
+                    "operation": tags.get("operation"),
+                    "expected_response": tags.get("expected_response"),
+                    **meta,
+                }
+            )
 
-plt.figure(figsize=(10, 6))
+    return pd.DataFrame(rows)
 
-for endpoint, color, label in endpoints:
-    vus_vals = results[endpoint]['vus']
-    avg_vals = results[endpoint]['avg_ms']
 
-    plt.plot(vus_vals, avg_vals, marker='o', linewidth=2, color=color, label=label)
+def load_all():
+    frames = []
 
-    for vus, ms in zip(vus_vals, avg_vals):
-        plt.annotate(f"{ms}ms", (vus, ms),
-                     textcoords="offset points", xytext=(0, 10),
-                     ha='center', fontsize=9)
+    for path in glob.glob(os.path.join(RESULTS_DIR, "*.json")):
+        meta = parse_file_meta(path)
+        if not meta:
+            continue
 
-plt.title('Зависимость времени отклика от нагрузки (Тест удвоения)', fontsize=14)
-plt.xlabel('Количество VUs', fontsize=12)
-plt.ylabel('Среднее время отклика (мс)', fontsize=12)
-plt.xticks(targets)
-plt.legend()
-plt.grid(True, linestyle='--', alpha=0.6)
-plt.tight_layout()
-plt.savefig('results/scalability_graph.png', dpi=150)
-print("\nГрафик сохранён: results/scalability_graph.png")
+        df = load_k6_json(path, meta)
+        if not df.empty:
+            frames.append(df)
+
+    if not frames:
+        return pd.DataFrame()
+
+    return pd.concat(frames, ignore_index=True)
+
+
+def aggregate(df):
+    df = df[df["expected_response"] == "true"].copy()
+
+    agg = (
+        df.groupby(["origin", "profile", "cpu", "operation"])["value"]
+        .agg(avg="mean", p95=lambda s: s.quantile(0.95), count="count")
+        .reset_index()
+        .sort_values(["origin", "profile", "operation", "cpu"])
+    )
+
+    return agg
+
+
+def plot_metric(agg, metric="avg"):
+    profiles = ["5/95", "50/50", "95/5"]
+    origins = ["local->server", "server->server"]
+    ops = [("create", "POST /visitors/"), ("read", "GET /exhibits/rating")]
+
+    for origin in origins:
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
+        fig.suptitle(f"{metric.upper()} response time vs CPU cores ({origin})", fontsize=14)
+
+        for ax, profile in zip(axes, profiles):
+            sub = agg[(agg["origin"] == origin) & (agg["profile"] == profile)]
+
+            for op, label in ops:
+                op_df = sub[sub["operation"] == op]
+                if op_df.empty:
+                    continue
+
+                ax.plot(op_df["cpu"], op_df[metric], marker="o", linewidth=2, label=label)
+
+                for _, r in op_df.iterrows():
+                    ax.annotate(
+                        f"{r[metric]:.1f}",
+                        (r["cpu"], r[metric]),
+                        textcoords="offset points",
+                        xytext=(0, 8),
+                        ha="center",
+                        fontsize=8,
+                    )
+
+            ax.set_title(f"write/read = {profile}")
+            ax.set_xlabel("CPU cores")
+            ax.grid(True, linestyle="--", alpha=0.4)
+
+            unique_cpu = sorted(sub["cpu"].unique())
+            if len(unique_cpu) > 0:
+                ax.set_xticks(unique_cpu)
+
+        axes[0].set_ylabel(f"{metric.upper()} response time (ms)")
+        handles, labels = axes[0].get_legend_handles_labels()
+        if handles:
+            fig.legend(handles, labels, loc="upper center", ncol=2)
+
+        fig.tight_layout(rect=[0, 0, 1, 0.92])
+        fig.savefig(os.path.join(OUT_DIR, f"{origin.replace('->', '_')}_{metric}.png"), dpi=150)
+        plt.close(fig)
+
+
+def main():
+    df = load_all()
+    if df.empty:
+        print("Нет данных")
+        return
+
+    agg = aggregate(df)
+    agg.to_csv(os.path.join(OUT_DIR, "cpu_scaling_summary.csv"), index=False)
+
+    plot_metric(agg, "avg")
+    plot_metric(agg, "p95")
+
+    print("Готово")
+
+
+if __name__ == "__main__":
+    main()

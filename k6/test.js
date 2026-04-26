@@ -1,79 +1,69 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
+import { check, sleep } from 'k6';
 
-const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
-const STUDENT_RATIO = parseFloat(__ENV.RATIO || '0.5');
-const STATS_RATIO   = 1 - STUDENT_RATIO;
-const MAX_VUS       = parseInt(__ENV.TARGET || '80');
-
-const STAGES = (ratio) => [
-  { duration: '10s', target: Math.round(10  * ratio) },
-  { duration: '10s', target: Math.round(10  * ratio) },
-  { duration: '10s', target: Math.round(20  * ratio) },
-  { duration: '10s', target: Math.round(20  * ratio) },
-  { duration: '10s', target: Math.round(40  * ratio) },
-  { duration: '10s', target: Math.round(40  * ratio) },
-  { duration: '10s', target: Math.round(MAX_VUS * ratio) },
-  { duration: '10s', target: Math.round(MAX_VUS * ratio) },
-  { duration: '10s', target: 0 },
-];
+const BASE_URL   = __ENV.BASE_URL   || 'http://localhost:8080';
+const VUS        = Number(__ENV.VUS        || 40);
+const DURATION   = __ENV.DURATION          || '2m';
+const WRITE_SHARE = Number(__ENV.WRITE_SHARE || 50); // 5, 50, 95
+const THINK_TIME  = Number(__ENV.THINK_TIME  || 0.3);
 
 export const options = {
   scenarios: {
-    create_students: {
-      executor: 'ramping-vus',
-      //startVUs: 1,
-      stages: [
-        { duration: '20s', target: 10 },
-        { duration: '60s', target: 10 },
-        { duration: '20s', target: 20 },
-        { duration: '60s', target: 20 },
-        { duration: '20s', target: 40 },
-        { duration: '60s', target: 40 },
-        { duration: '20s', target: 80 },
-        { duration: '60s', target: 80 },
-        { duration: '20s', target: 0 },
-    ],
-      exec: 'createStudent',
+    mixed_profile: {
+      executor: 'constant-vus',
+      vus: VUS,
+      duration: DURATION,
+      gracefulStop: '10s',
+      exec: 'mixedFlow',
+      tags: {
+        profile: `${WRITE_SHARE}/${100 - WRITE_SHARE}`,
+      },
     },
-    get_stats: {
-      executor: 'ramping-vus',
-      //startVUs: 1,
-      stages: [
-        { duration: '20s', target: 10 },
-        { duration: '60s', target: 10 },
-        { duration: '20s', target: 20 },
-        { duration: '60s', target: 20 },
-        { duration: '20s', target: 40 },
-        { duration: '60s', target: 40 },
-        { duration: '20s', target: 80 },
-        { duration: '60s', target: 80 },
-        { duration: '20s', target: 0 },
-    ],
-      exec: 'getStats',
-    },
+  },
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)'],
+  thresholds: {
+    'http_req_duration{operation:create}': ['p(95)<500'],
+    'http_req_duration{operation:read}':   ['p(95)<300'],
+    'http_req_failed': ['rate<0.01'],
   },
 };
 
-function makeStudent() {
+export function mixedFlow() {
+  if (Math.random() * 100 < WRITE_SHARE) {
+    createStudent();
+  } else {
+    readStats();
+  }
+  sleep(THINK_TIME);
+}
+
+function createStudent() {
   const n = Math.random().toString(36).slice(2, 8);
-  return JSON.stringify({
-    fio: `Student ${n}`,
+  const payload = JSON.stringify({
+    fio: `Student-${n}`,
     studentCard: `SC-${n}`,
     enrollmentYear: 2024,
   });
+
+  const res = http.post(`${BASE_URL}/students/`, payload, {
+    headers: { 'Content-Type': 'application/json' },
+    tags: { operation: 'create', entity: 'student' },
+  });
+
+  check(res, {
+    'create: status 2xx':              (r) => r.status >= 200 && r.status < 300,
+    'create: response time < 500ms':   (r) => r.timings.duration < 500,
+  });
 }
 
-export function createStudent() {
-  http.post(
-    `${BASE_URL}/students/`,
-    makeStudent(),
-    { headers: { 'Content-Type': 'application/json' }, tags: { endpoint: 'student' } }
-  );
-  sleep(1);
-}
+function readStats() {
+  const res = http.get(`${BASE_URL}/enrollments/stats/average`, {
+    tags: { operation: 'read', entity: 'stats' },
+  });
 
-export function getStats() {
-  http.get(`${BASE_URL}/enrollments/stats/average`,{ tags: { endpoint: 'average' } });
-  sleep(1);
+  check(res, {
+    'read: status 200':            (r) => r.status === 200,
+    'read: has body':              (r) => r.body && r.body.length > 0,
+    'read: response time < 300ms': (r) => r.timings.duration < 300,
+  });
 }
