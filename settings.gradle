@@ -1,1 +1,3 @@
-rootProject.name = 'module1'
+rootProject.name = 'hl-labs'
+include 'main'
+include 'additional'

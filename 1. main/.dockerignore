@@ -1,0 +1,10 @@
+.gradle/
+build/
+.idea/
+*.iml
+.git/
+.gitignore
+*.log
+docker-compose.yml
+Dockerfile*
+seed.py
