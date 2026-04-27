@@ -1,6 +1,7 @@
 services:
   backend:
-    image: lekva/hl:1.0
+    build:
+      dockerfile: Dockerfile.backend
     container_name: backend
     deploy:
       resources:
@@ -32,5 +33,6 @@ services:
 #      interval: 5s
 #      timeout: 5s
 #      retries: 5
+
 #volumes:
 #  pgdata:
