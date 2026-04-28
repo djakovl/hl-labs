@@ -52,6 +52,5 @@ Thumbs.db
 *.wmv
 
 .env
-application.properties
 k6/results
 .vscode/
