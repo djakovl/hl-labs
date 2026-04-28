@@ -28,6 +28,7 @@ dependencies {
 	implementation "org.flywaydb:flyway-database-postgresql"
 	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9"
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.zonky.test:embedded-database-spring-test:2.7.1'

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class CourseClient {
@@ -28,5 +29,9 @@ public class CourseClient {
             null,
             new ParameterizedTypeReference<List<Course>>() {}
         ).getBody();
+    }
+
+    public Course getById(UUID id) {
+        return restTemplate.getForObject(baseUrl + "/courses/" + id, Course.class);
     }
 }
