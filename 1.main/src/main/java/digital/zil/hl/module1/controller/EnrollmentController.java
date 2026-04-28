@@ -43,10 +43,6 @@ public class EnrollmentController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { enrollmentService.delete(id); }
 
-    @GetMapping("/stats/average")
-    public Map<String, Double> statsAverage() {
-        return enrollmentService.averageStudentsPerCourse();
-    }
     @DeleteMapping("/clear")
     @Transactional
     public void clear() { enrollmentService.clear();}

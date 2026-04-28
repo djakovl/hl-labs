@@ -18,8 +18,8 @@ public class EnrollmentDetailController {
         this.service = service;
     }
 
-    @GetMapping("/enrollments")
-    public List<EnrollmentDetail> getEnrollmentsWithDetails() {
-        return service.getEnrollmentsWithDetails();
+    @GetMapping("/stats/average")
+    public Map<String, Double> statsAverage() {
+        return service.averageStudentsPerCourse();
     }
 }

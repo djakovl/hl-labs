@@ -73,22 +73,5 @@ public class EnrollmentService {
         enrollmentRepository.save(entity);
     }
 
-    public Map<String, Double> averageStudentsPerCourse() {
-        Map<UUID, Long> countPerCourse = enrollmentRepository.findAllByDeletedFalse()
-                .stream()
-                .collect(Collectors.groupingBy(
-                        EnrollmentEntity::getCourseId,
-                        Collectors.counting()
-                ));
-
-        return courseRepository.findAllByDeletedFalse()
-                .stream()
-                .filter(c -> countPerCourse.containsKey(c.getId()))
-                .collect(Collectors.groupingBy(
-                        CourseEntity::getCode,
-                        Collectors.averagingLong(c -> countPerCourse.getOrDefault(c.getId(), 0L))
-                ));
-    }
-
     public void clear() { enrollmentRepository.clearAll(); }
 }

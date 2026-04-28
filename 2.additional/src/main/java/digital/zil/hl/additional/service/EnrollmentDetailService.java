@@ -29,25 +29,18 @@ public class EnrollmentDetailService {
         this.courseClient = courseClient;
     }
 
-    // JOIN на стороне Java — студент + курс + запись
-    public List<EnrollmentDetail> getEnrollmentsWithDetails() {
-        List<Enrollment> enrollments = enrollmentClient.getAll();
-        
-        Map<UUID, Student> studentMap = studentClient.getAll()
-            .stream()
-            .collect(Collectors.toMap(Student::getId, s -> s));
+    public Map<String, Double> averageStudentsPerCourse() {
+    List<Enrollment> enrollments = enrollmentClient.getAll();
+    List<Course> courses = courseClient.getAll();
 
-        Map<UUID, Course> courseMap = courseClient.getAll()
-            .stream()
-            .collect(Collectors.toMap(Course::getId, c -> c));
+    Map<UUID, Long> countPerCourse = enrollments.stream()
+        .collect(Collectors.groupingBy(Enrollment::getCourseId, Collectors.counting()));
 
-        return enrollments.stream()
-            .filter(e -> !e.isDeleted())
-            .map(e -> new EnrollmentDetail(
-                e,
-                studentMap.get(e.getStudentId()),
-                courseMap.get(e.getCourseId())
-            ))
-            .collect(Collectors.toList());
+    return courses.stream()
+        .filter(c -> countPerCourse.containsKey(c.getId()))
+        .collect(Collectors.groupingBy(
+            Course::getCode,
+            Collectors.averagingLong(c -> countPerCourse.getOrDefault(c.getId(), 0L))
+        ));
     }
 }
