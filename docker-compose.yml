@@ -1,27 +1,7 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: hl2
-      POSTGRES_USER: hl2
-      POSTGRES_PASSWORD: hl2pass
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "5433:5432"          # снаружи 5433, внутри 5432
-    volumes:
-      - ./pgdata:/var/lib/postgresql/data
-    command: >
-      postgres -c max_connections=1000
-
-  backend:
-    build:
-      context: ./1.main
-      dockerfile: Dockerfile.main
-    container_name: backend
-    depends_on:
-      - postgres
+  main:
+    image: lekva/hl-main:1.0
+    container_name: ${MAIN_URL}
     deploy:
       resources:
         limits:
@@ -31,29 +11,26 @@ services:
           cpus: "${RESERV_CPU}"
           memory: ${RESERV_MEM}
     ports:
-      - "8080:8080"
+      - "8080:${MAIN_PORT}"
     env_file:
       - .env
     environment:
       SERVER_TOMCAT_MAX_THREADS: ${LIMITS_THREADS}
       SPRING_JPA_SHOW_SQL: "false"
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hl2
-      SPRING_DATASOURCE_USERNAME: hl2
-      SPRING_DATASOURCE_PASSWORD: hl2pass
 
   additional:
-    build:
-      context: ./2.additional
-      dockerfile: Dockerfile.additional
-    container_name: additional
+    image: lekva/hl-additional:1.0
+    container_name: ${ADDITIONAL_URL}
     depends_on:
-      - backend
+      - main
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 256m
+          cpus: "${LIMITS_CPU_A}"
+          memory: ${LIMITS_MEM_A}
     ports:
-      - "8081:8081"
+      - "8081:${ADDITIONAL_PORT}"
+    env_file:
+      - .env
     environment:
-      MAIN_SERVICE_URL: http://backend:8080
+      MAIN_SERVICE_URL: http://${MAIN_URL}:${MAIN_PORT}

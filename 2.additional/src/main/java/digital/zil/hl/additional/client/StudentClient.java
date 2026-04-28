@@ -23,7 +23,7 @@ public class StudentClient {
 
     public List<Student> getAll() {
         return restTemplate.exchange(
-            baseUrl + "/students/",
+            baseUrl + "/students",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<Student>>() {}

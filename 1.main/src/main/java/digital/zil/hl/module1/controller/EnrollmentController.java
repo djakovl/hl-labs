@@ -3,8 +3,13 @@ package digital.zil.hl.module1.controller;
 import digital.zil.hl.module1.model.Enrollment;
 import digital.zil.hl.module1.service.EnrollmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -15,12 +20,13 @@ import java.util.UUID;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+
     @Value("${additional-service.url}")
     private String additionalUrl;
 
     @Autowired
     private RestTemplate restTemplate;
-    
+
     @Autowired
     public EnrollmentController(EnrollmentService enrollmentService) {
         this.enrollmentService = enrollmentService;
@@ -47,19 +53,18 @@ public class EnrollmentController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { enrollmentService.delete(id); }
-    
+
     @GetMapping("/stats/average")
-    public ResponseEntity<Map<String, Double>> statsAverage() {
-        ResponseEntity<Map<String, Double>> response = restTemplate.exchange(
+    public Map<String, Double> statsAverage() {
+        return restTemplate.exchange(
             additionalUrl + "/additional/stats/average",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<Map<String, Double>>() {}
-        );
-        return response;
+        ).getBody();
     }
-    
+
     @DeleteMapping("/clear")
     @Transactional
-    public void clear() { enrollmentService.clear();}
+    public void clear() { enrollmentService.clear(); }
 }
