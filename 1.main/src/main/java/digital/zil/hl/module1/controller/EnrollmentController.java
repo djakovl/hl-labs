@@ -15,7 +15,12 @@ import java.util.UUID;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    @Value("${additional-service.url}")
+    private String additionalUrl;
 
+    @Autowired
+    private RestTemplate restTemplate;
+    
     @Autowired
     public EnrollmentController(EnrollmentService enrollmentService) {
         this.enrollmentService = enrollmentService;
@@ -42,7 +47,18 @@ public class EnrollmentController {
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id) { enrollmentService.delete(id); }
-
+    
+    @GetMapping("/stats/average")
+    public ResponseEntity<Map<String, Double>> statsAverage() {
+        ResponseEntity<Map<String, Double>> response = restTemplate.exchange(
+            additionalUrl + "/additional/stats/average",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<Map<String, Double>>() {}
+        );
+        return response;
+    }
+    
     @DeleteMapping("/clear")
     @Transactional
     public void clear() { enrollmentService.clear();}
