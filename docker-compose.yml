@@ -26,7 +26,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "${LIMITS_CPU_A}"
+          cpus: "${LIMITS_CPU}"
           memory: ${LIMITS_MEM_A}
     ports:
       - "8081:${ADDITIONAL_PORT}"

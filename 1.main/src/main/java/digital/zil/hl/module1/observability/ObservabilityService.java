@@ -1,4 +1,4 @@
-package digital.zil.hl.main.observability;
+package digital.zil.hl.module1.observability;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

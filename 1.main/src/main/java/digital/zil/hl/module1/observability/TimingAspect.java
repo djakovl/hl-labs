@@ -1,4 +1,4 @@
-package digital.zil.hl.main.observability;
+package digital.zil.hl.module1.observability;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
