@@ -2,6 +2,8 @@ services:
   main:
     image: lekva/hl-main:1.0
     container_name: ${MAIN_URL}
+    extra_hosts:
+      - "${KAFKA_URL}:${KAFKA_IP}"
     deploy:
       resources:
         limits:
