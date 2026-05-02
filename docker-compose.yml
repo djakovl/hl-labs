@@ -36,3 +36,4 @@ services:
       - .env
     environment:
       MAIN_SERVICE_URL: http://${MAIN_URL}:${MAIN_PORT}
+

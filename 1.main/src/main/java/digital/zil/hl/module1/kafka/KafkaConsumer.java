@@ -12,6 +12,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+import java.util.List;
 
 @Component
 public class KafkaConsumer {
@@ -36,16 +37,18 @@ public class KafkaConsumer {
     @KafkaListener(
         topics = "${kafka.topic.name}",
         groupId = "${spring.kafka.consumer.group-id}",
-        concurrency = "${kafka.consumer.concurrency}"
+        concurrency = "${kafka.consumer.concurrency}",
+        batch = "true"
     )
-    public void consume(String rawMessage) {
-        log.info("Kafka raw message received: {}", rawMessage);
-        try {
-            KafkaMessage msg = objectMapper.readValue(rawMessage, KafkaMessage.class);
-            log.info("Kafka parsed: {}", msg);
-            route(msg);
-        } catch (Exception e) {
-            log.error("Failed to process kafka message: {}", rawMessage, e);
+    public void consume(List<String> rawMessages) {  // параметр - List
+        for (String raw : rawMessages) {             // итерируемся по элементам
+            log.info("Kafka raw message received: {}", raw);
+            try {
+                KafkaMessage msg = objectMapper.readValue(raw, KafkaMessage.class);  // raw - это String
+                route(msg);
+            } catch (Exception e) {
+                log.error("Failed to process kafka message: {}", raw, e);
+            }
         }
     }
 
