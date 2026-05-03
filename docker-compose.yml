@@ -1,6 +1,6 @@
 services:
   main:
-    image: lekva/hl-main:1.0
+    image: git.dyakov.space/dyakovli/hl-main:1.0
     container_name: ${MAIN_URL}
     extra_hosts:
       - "${KAFKA_URL}:${KAFKA_IP}"
@@ -21,7 +21,7 @@ services:
       SPRING_JPA_SHOW_SQL: "false"
 
   additional:
-    image: lekva/hl-additional:1.0
+    image: git.dyakov.space/dyakovli/hl-additional:1.0
     container_name: ${ADDITIONAL_URL}
     depends_on:
       - main
