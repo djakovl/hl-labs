@@ -22,7 +22,7 @@ spec:
           hostnames: ["hl16.zil"]
       containers:
         - name: main
-          image: git.dyakov.space/djakovli/hl-main:1.0
+          image: git.dyakov.space/dyakovli/hl-main:1.0
           ports:
             - containerPort: 8080
           resources:
