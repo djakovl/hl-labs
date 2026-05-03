@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main
+  namespace: dyakovli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main
+  template:
+    metadata:
+      labels:
+        app: main
+    spec:
+      imagePullSecrets:
+        - name: gitea-secret
+      hostAliases:
+        - ip: "10.60.3.12"
+          hostnames: ["hl15.zil"]
+        - ip: "10.60.3.13"
+          hostnames: ["hl16.zil"]
+      containers:
+        - name: main
+          image: git.dyakov.space/djakovli/hl-main:1.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "0.25"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "0.75G"
+          envFrom:
+            - secretRef:
+                name: app-config
+            - secretRef:
+                name: db-secret
