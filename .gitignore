@@ -51,7 +51,7 @@ Thumbs.db
 *.mov
 *.wmv
 
-.env
+.env*
 k6/results
 .vscode/
 build/
