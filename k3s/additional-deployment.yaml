@@ -26,9 +26,9 @@ spec:
               memory: "256Mi"
             limits:
               cpu: "1"
-              memory: "0.75G"
+              memory: "1Gi"
           envFrom:
-            - secretRef:
+            - configMapRef:
                 name: app-config
             - secretRef:
                 name: db-secret
