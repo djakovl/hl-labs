@@ -54,3 +54,4 @@ Thumbs.db
 .env
 k6/results
 .vscode/
+build/
