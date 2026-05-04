@@ -17,9 +17,9 @@ spec:
         - name: gitea-secret
       hostAliases:
         - ip: "10.60.3.12"
-          hostnames: ["hl15.zil"]
+          hostnames: ["hl14.zil"]
         - ip: "10.60.3.13"
-          hostnames: ["hl16.zil"]
+          hostnames: ["hl15.zil"]
       containers:
         - name: main
           image: git.dyakov.space/dyakovli/hl-main:1.0
