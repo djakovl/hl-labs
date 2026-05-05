@@ -9,6 +9,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.kafka.core.KafkaAdmin;
 
 import java.util.HashMap;
@@ -43,7 +44,9 @@ public class KafkaConfig {
     }
     
     @Bean
-    public AdminClient kafkaAdminClient(KafkaAdmin kafkaAdmin) {
-        return AdminClient.create(kafkaAdmin.getConfigurationProperties());
+    public AdminClient kafkaAdminClient() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return AdminClient.create(props);
     }
 }
