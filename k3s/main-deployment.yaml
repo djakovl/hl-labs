@@ -37,19 +37,23 @@ spec:
                 name: app-config
             - secretRef:
                 name: db-secret
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /ping
               port: 8080
-            initialDelaySeconds: 30
             periodSeconds: 15
             failureThreshold: 3
-            timeoutSeconds: 5
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /health
               port: 8080
-            initialDelaySeconds: 20
             periodSeconds: 10
-            failureThreshold: 3
-            timeoutSeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 6

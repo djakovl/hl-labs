@@ -31,20 +31,24 @@ spec:
             - configMapRef:
                 name: app-config
             - secretRef:
-                name: db-secret
+                name: db-secret       # ← было слеплено с startupProbe
+          startupProbe:               # ← было съехавшее выравнивание
+            httpGet:
+              path: /health
+              port: 8081
+            failureThreshold: 15
+            periodSeconds: 5
           livenessProbe:
             httpGet:
-              path: /actuator/health/liveness
+              path: /ping
               port: 8081
-            initialDelaySeconds: 20
             periodSeconds: 15
             failureThreshold: 3
-            timeoutSeconds: 5
+            timeoutSeconds: 3
           readinessProbe:
             httpGet:
-              path: /actuator/health/readiness
+              path: /health
               port: 8081
-            initialDelaySeconds: 15
             periodSeconds: 10
-            failureThreshold: 3
-            timeoutSeconds: 5
+            failureThreshold: 2
+            timeoutSeconds: 3
