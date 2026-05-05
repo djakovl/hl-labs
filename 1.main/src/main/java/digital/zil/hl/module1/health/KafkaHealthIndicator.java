@@ -1,36 +1,35 @@
 package digital.zil.hl.module1.health;
 
 import org.apache.kafka.clients.admin.AdminClient;
+import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Component("kafka")
-public class KafkaHealthIndicator implements HealthIndicator {
+public class KafkaHealthIndicator extends AbstractHealthIndicator {
 
-    private final KafkaAdmin kafkaAdmin;
+    private final AdminClient adminClient;
 
-    public KafkaHealthIndicator(KafkaAdmin kafkaAdmin) {
-        this.kafkaAdmin = kafkaAdmin;
+    @Value("${kafka.health.timeout-seconds:5}")
+    private long timeoutSeconds;
+
+    public KafkaHealthIndicator(AdminClient adminClient) {
+        this.adminClient = adminClient;
     }
 
     @Override
-    public Health health() {
-        try (AdminClient client = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
-            var nodes = client.describeCluster()
-                    .nodes()
-                    .get(5, TimeUnit.SECONDS);
-            return Health.up()
-                    .withDetail("brokers", nodes.size())
-                    .build();
-        } catch (Exception e) {
-            return Health.down()
-                    .withDetail("error", e.getMessage())
-                    .build();
+    protected void doHealthCheck(Health.Builder builder) throws Exception {
+        var nodes = adminClient.describeCluster()
+                .nodes()
+                .get(timeoutSeconds, TimeUnit.SECONDS);
+
+        if (nodes.isEmpty()) {
+            builder.down().withDetail("error", "No brokers available");
+        } else {
+            builder.up().withDetail("brokers", nodes.size());
         }
     }
 }
