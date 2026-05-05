@@ -1,4 +1,4 @@
-package digital.zil.hl.main.health;
+package digital.zil.hl.module1.health;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.springframework.boot.actuate.health.Health;
