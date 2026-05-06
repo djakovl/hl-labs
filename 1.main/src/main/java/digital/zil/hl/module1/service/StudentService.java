@@ -5,6 +5,8 @@ import digital.zil.hl.module1.mapper.StudentMapper;
 import digital.zil.hl.module1.model.Student;
 import digital.zil.hl.module1.repository.StudentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,8 +33,16 @@ public class StudentService {
                 .orElseThrow(() -> new AppException("Student not found: " + id));
     }
 
+    @Transactional
     public Student save(Student student) {
-        return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
+        try {
+            return StudentMapper.toModel(
+                studentRepository.save(StudentMapper.toEntity(student))
+            );
+        } catch (ObjectOptimisticLockingFailureException e) {
+            // дубль — студент уже сохранён другим потоком, возвращаем как есть
+            return student;
+        }
     }
 
     public Student update(String id, Student student) {

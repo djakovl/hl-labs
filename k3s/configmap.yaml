@@ -4,6 +4,7 @@ metadata:
   name: app-config
   namespace: dyakovli
 data:
+  CB_WAIT_DURATION: "5s"
   DB_HOST: "10.60.3.9"
   DB_PORT: "5433"
   POSTGRES_DB: "hl2?currentSchema=hl2"

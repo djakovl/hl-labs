@@ -17,7 +17,7 @@ spec:
         - name: gitea-secret
       containers:
         - name: additional
-          image: git.dyakov.space/dyakovli/hl-additional:1.0
+          image: git.dyakov.space/dyakovli/hl-additional:1.5
           imagePullPolicy: Always
           ports:
             - containerPort: 8081

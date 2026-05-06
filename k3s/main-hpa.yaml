@@ -12,13 +12,13 @@ spec:
   maxReplicas: 3
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 20
+      stabilizationWindowSeconds: 5
     scaleDown:
-      stabilizationWindowSeconds: 20
+      stabilizationWindowSeconds: 10
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 10

@@ -31,8 +31,8 @@ public class CourseClient {
             new ParameterizedTypeReference<List<Course>>() {}
         ).getBody();
     }
-    
-    @CircuitBreaker(name = "mainService")
+
+    @Retry(name = "mainService")
     public Course getById(UUID id) {
         return restTemplate.getForObject(baseUrl + "/courses/" + id, Course.class);
     }

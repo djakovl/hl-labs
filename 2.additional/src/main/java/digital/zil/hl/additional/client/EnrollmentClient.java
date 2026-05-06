@@ -23,7 +23,7 @@ public class EnrollmentClient {
     }
     
     
-    @CircuitBreaker(name = "mainService")
+    @Retry(name = "mainService")
     public List<Enrollment> getAll() {
         return restTemplate.exchange(
             baseUrl + "/enrollments",

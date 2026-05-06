@@ -17,4 +17,8 @@ public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, UU
     @Modifying  
     @Query("DELETE FROM EnrollmentEntity s")
     void clearAll();
+
+    Optional<EnrollmentEntity> findByStudentIdAndCourseIdAndDeletedFalse(
+        UUID studentId, UUID courseId
+    );
 }

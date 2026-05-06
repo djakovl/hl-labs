@@ -23,7 +23,7 @@ spec:
           hostnames: ["hl15.zil"]
       containers:
         - name: main
-          image: git.dyakov.space/dyakovli/hl-main:1.0
+          image: git.dyakov.space/dyakovli/hl-main:1.7
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -46,14 +46,14 @@ spec:
             failureThreshold: 24
             periodSeconds: 5
             timeoutSeconds: 8
-         # livenessProbe:
-         #   httpGet:
-         #     path: /health
-         #     port: 8080
-         #   initialDelaySeconds: 0
-         #   periodSeconds: 30
-         #   failureThreshold: 3
-         #   timeoutSeconds: 8
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 8
           readinessProbe:
             httpGet:
               path: /health

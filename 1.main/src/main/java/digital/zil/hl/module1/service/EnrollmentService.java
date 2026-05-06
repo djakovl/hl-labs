@@ -8,6 +8,8 @@ import digital.zil.hl.module1.model.Enrollment;
 import digital.zil.hl.module1.repository.CourseRepository;
 import digital.zil.hl.module1.repository.EnrollmentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,24 +41,34 @@ public class EnrollmentService {
                 .orElseThrow(() -> new AppException("Enrollment not found: " + id));
     }
 
+    @Transactional
     public Enrollment enroll(UUID studentId, UUID courseId) {
-        var course = courseRepository.findByIdAndDeletedFalse(courseId)
-                .orElseThrow(() -> new AppException("Course not found: " + courseId));
+        try {
+            var course = courseRepository.findByIdAndDeletedFalse(courseId)
+                    .orElseThrow(() -> new AppException("Course not found: " + courseId));
 
-        int currentYear = LocalDate.now().getYear();
-        if (course.getYear() != null && course.getYear() < currentYear) {
-            throw new AppException(
-                    "Cannot enroll in course from year " + course.getYear() +
-                    ". Current year is " + currentYear
+            int currentYear = LocalDate.now().getYear();
+            if (course.getYear() != null && course.getYear() < currentYear) {
+                throw new AppException(
+                        "Cannot enroll in course from year " + course.getYear() +
+                        ". Current year is " + currentYear
+                );
+            }
+
+            EnrollmentEntity e = new EnrollmentEntity();
+            e.setStudentId(studentId);
+            e.setCourseId(courseId);
+            e.setEnrollmentDate(LocalDate.now());
+            e.setStatus("ACTIVE");
+            return EnrollmentMapper.toModel(enrollmentRepository.save(e));
+
+        } catch (ObjectOptimisticLockingFailureException e) {
+            return EnrollmentMapper.toModel(
+                enrollmentRepository
+                    .findByStudentIdAndCourseIdAndDeletedFalse(studentId, courseId)
+                    .orElseThrow(() -> new AppException("Enrollment not found after conflict"))
             );
         }
-
-        EnrollmentEntity e = new EnrollmentEntity();
-        e.setStudentId(studentId);
-        e.setCourseId(courseId);
-        e.setEnrollmentDate(LocalDate.now());
-        e.setStatus("ACTIVE");
-        return EnrollmentMapper.toModel(enrollmentRepository.save(e));
     }
 
     public Enrollment complete(String id) {

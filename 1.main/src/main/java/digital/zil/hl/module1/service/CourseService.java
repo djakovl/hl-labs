@@ -5,6 +5,8 @@ import digital.zil.hl.module1.mapper.CourseMapper;
 import digital.zil.hl.module1.model.Course;
 import digital.zil.hl.module1.repository.CourseRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,8 +33,15 @@ public class CourseService {
                 .orElseThrow(() -> new AppException("Course not found: " + id));
     }
 
+    @Transactional
     public Course save(Course course) {
-        return CourseMapper.toModel(courseRepository.save(CourseMapper.toEntity(course)));
+        try {
+            return CourseMapper.toModel(
+                courseRepository.save(CourseMapper.toEntity(course))
+            );
+        } catch (ObjectOptimisticLockingFailureException e) {
+            return course;
+        }
     }
 
     public Course update(String id, Course course) {
