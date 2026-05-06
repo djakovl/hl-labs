@@ -6,6 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import io.github.resilience4j.retry.annotation.Retry;
 
 import java.util.List;
 
@@ -20,7 +21,9 @@ public class EnrollmentClient {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
     }
-
+    
+    
+    @Retry(name = "mainService")
     public List<Enrollment> getAll() {
         return restTemplate.exchange(
             baseUrl + "/enrollments",
