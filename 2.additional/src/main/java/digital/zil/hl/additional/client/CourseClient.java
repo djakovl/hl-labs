@@ -6,6 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import io.github.resilience4j.retry.annotation.Retry;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,8 @@ public class CourseClient {
             new ParameterizedTypeReference<List<Course>>() {}
         ).getBody();
     }
-
+    
+    @CircuitBreaker(name = "mainService")
     public Course getById(UUID id) {
         return restTemplate.getForObject(baseUrl + "/courses/" + id, Course.class);
     }

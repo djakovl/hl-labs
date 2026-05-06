@@ -12,7 +12,7 @@ public class CrashController {
     @PostMapping
     public ResponseEntity<Void> crash() {
         new Thread(() -> {
-            try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+            try { Thread.sleep(1); } catch (InterruptedException ignored) {}
             System.exit(1);
         }).start();
         return ResponseEntity.ok().build();

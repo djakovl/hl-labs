@@ -13,6 +13,7 @@ spec:
       labels:
         app: main
     spec:
+      terminationGracePeriodSeconds: 10
       imagePullSecrets:
         - name: gitea-secret
       hostAliases:
@@ -38,23 +39,26 @@ spec:
                 name: app-config
             - secretRef:
                 name: db-secret
-          startupProbe:               # ← было съехавшее выравнивание
+          startupProbe:
             httpGet:
               path: /health
               port: 8080
-            failureThreshold: 15
+            failureThreshold: 24
             periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8080
-            periodSeconds: 15
-            failureThreshold: 3
-            timeoutSeconds: 3
+            timeoutSeconds: 8
+         # livenessProbe:
+         #   httpGet:
+         #     path: /health
+         #     port: 8080
+         #   initialDelaySeconds: 0
+         #   periodSeconds: 30
+         #   failureThreshold: 3
+         #   timeoutSeconds: 8
           readinessProbe:
             httpGet:
               path: /health
               port: 8080
+            initialDelaySeconds: 0
             periodSeconds: 10
-            failureThreshold: 2
-            timeoutSeconds: 3
+            failureThreshold: 3
+            timeoutSeconds: 8
