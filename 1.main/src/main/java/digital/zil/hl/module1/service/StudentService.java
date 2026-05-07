@@ -5,8 +5,6 @@ import digital.zil.hl.module1.mapper.StudentMapper;
 import digital.zil.hl.module1.model.Student;
 import digital.zil.hl.module1.repository.StudentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,11 +31,13 @@ public class StudentService {
                 .orElseThrow(() -> new AppException("Student not found: " + id));
     }
 
-    @Transactional
     public Student save(Student student) {
+<<<<<<< HEAD
+=======
         if (student.getId() != null && studentRepository.existsById(student.getId())) {
             return student;
         }
+>>>>>>> 9bcc754 (redis)
         return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
     }
     
@@ -52,6 +52,6 @@ public class StudentService {
         entity.setDeleted(true);
         studentRepository.save(entity);
     }
-    
+
     public void clear() { studentRepository.clearAll(); }
 }
