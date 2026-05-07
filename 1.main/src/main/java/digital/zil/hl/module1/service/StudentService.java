@@ -32,12 +32,9 @@ public class StudentService {
     }
 
     public Student save(Student student) {
-<<<<<<< HEAD
-=======
         if (student.getId() != null && studentRepository.existsById(student.getId())) {
             return student;
         }
->>>>>>> 9bcc754 (redis)
         return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
     }
     

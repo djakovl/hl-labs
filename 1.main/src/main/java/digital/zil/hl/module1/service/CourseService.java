@@ -32,12 +32,9 @@ public class CourseService {
     }
 
     public Course save(Course course) {
-<<<<<<< HEAD
-=======
         if (course.getId() != null && courseRepository.existsById(course.getId())) {
             return course;
         }
->>>>>>> 9bcc754 (redis)
         return CourseMapper.toModel(courseRepository.save(CourseMapper.toEntity(course)));
     }
 
