@@ -35,13 +35,10 @@ public class CourseService {
 
     @Transactional
     public Course save(Course course) {
-        try {
-            return CourseMapper.toModel(
-                courseRepository.save(CourseMapper.toEntity(course))
-            );
-        } catch (ObjectOptimisticLockingFailureException e) {
+        if (course.getId() != null && courseRepository.existsById(course.getId())) {
             return course;
         }
+        return CourseMapper.toModel(courseRepository.save(CourseMapper.toEntity(course)));
     }
 
     public Course update(String id, Course course) {

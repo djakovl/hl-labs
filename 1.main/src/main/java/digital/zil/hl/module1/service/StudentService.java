@@ -35,16 +35,12 @@ public class StudentService {
 
     @Transactional
     public Student save(Student student) {
-        try {
-            return StudentMapper.toModel(
-                studentRepository.save(StudentMapper.toEntity(student))
-            );
-        } catch (ObjectOptimisticLockingFailureException e) {
-            // дубль — студент уже сохранён другим потоком, возвращаем как есть
+        if (student.getId() != null && studentRepository.existsById(student.getId())) {
             return student;
         }
+        return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));
     }
-
+    
     public Student update(String id, Student student) {
         student.setId(UUID.fromString(id));
         return StudentMapper.toModel(studentRepository.save(StudentMapper.toEntity(student)));

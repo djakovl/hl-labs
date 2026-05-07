@@ -4,13 +4,11 @@ import digital.zil.hl.additional.client.CourseClient;
 import digital.zil.hl.additional.model.Course;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,47 +16,40 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CourseCache {
 
     private static final Logger log = LoggerFactory.getLogger(CourseCache.class);
+    private static final String PREFIX = "course:";
 
     private final CourseClient courseClient;
-    private final Map<UUID, Course> cache;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private final AtomicLong hits = new AtomicLong(0);
     private final AtomicLong misses = new AtomicLong(0);
 
     public CourseCache(CourseClient courseClient,
-                       @Value("${cache.course.max-size:50}") int maxSize) {
+                       RedisTemplate<String, Object> redisTemplate) {
         this.courseClient = courseClient;
-        this.cache = Collections.synchronizedMap(
-            new LinkedHashMap<>(maxSize, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<UUID, Course> eldest) {
-                    return size() > maxSize;
-                }
-            }
-        );
+        this.redisTemplate = redisTemplate;
     }
 
     public Course get(UUID id) {
-        synchronized (cache) {
-            if (cache.containsKey(id)) {
-                hits.incrementAndGet();
-                return cache.get(id);
-            }
+        String key = PREFIX + id;
+        Course cached = (Course) redisTemplate.opsForValue().get(key);
+        if (cached != null) {
+            hits.incrementAndGet();
+            return cached;
         }
 
         Course course = courseClient.getById(id);
         if (course != null) {
-            synchronized (cache) {
-                cache.put(id, course);
-            }
+            redisTemplate.opsForValue().set(key, course, Duration.ofMinutes(10));
             misses.incrementAndGet();
         }
         return course;
     }
 
     public void invalidate() {
-        synchronized (cache) {
-            cache.clear();
+        var keys = redisTemplate.keys(PREFIX + "*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
         }
         hits.set(0);
         misses.set(0);
@@ -66,13 +57,8 @@ public class CourseCache {
 
     @Scheduled(fixedRateString = "${cache.stats.interval.ms:30000}")
     public void printStats() {
-        long h = hits.get();
-        long m = misses.get();
-        long total = h + m;
-        double hitRatio = total == 0 ? 0.0 : (double) h / total * 100;
-        synchronized (cache) {
-            log.info("[CourseCache] size={} hits={} misses={} hit-ratio={}%",
-                cache.size(), h, m, String.format("%.1f", hitRatio));
-        }
+        long h = hits.get(), m = misses.get(), total = h + m;
+        double ratio = total == 0 ? 0.0 : (double) h / total * 100;
+        log.info("[CourseCache] hits={} misses={} hit-ratio={}%", h, m, String.format("%.1f", ratio));
     }
 }

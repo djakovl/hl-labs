@@ -23,7 +23,7 @@ spec:
           hostnames: ["hl15.zil"]
       containers:
         - name: main
-          image: git.dyakov.space/dyakovli/hl-main:1.7
+          image: git.dyakov.space/dyakovli/hl-main:1.8
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
